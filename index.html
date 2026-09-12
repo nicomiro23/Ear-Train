@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#10131a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="EarQuest" />
+  <title>EarQuest</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0d12;
+      --card: #141821;
+      --card2: #1b2230;
+      --text: #f3f5f8;
+      --muted: #9ba7b8;
+      --accent: #7c5cff;
+      --accent2: #20c997;
+      --danger: #ff5d73;
+      --line: rgba(255,255,255,.08);
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { min-height: 100svh; }
+
+    .app {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      padding: max(22px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .brand h1 { margin: 0; font-size: clamp(28px, 7vw, 42px); line-height: 1; }
+    .brand p { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+
+    .ghost {
+      appearance: none;
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: rgba(255,255,255,.03);
+      padding: 10px 13px;
+      border-radius: 14px;
+      font-weight: 700;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .stat, .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.012)), var(--card);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .stat {
+      border-radius: 16px;
+      padding: 12px;
+      min-width: 0;
+    }
+
+    .stat .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+    .stat .value { font-size: 21px; font-weight: 900; margin-top: 4px; white-space: nowrap; }
+
+    .panel {
+      border-radius: 24px;
+      padding: 18px;
+    }
+
+    .trainer {
+      text-align: center;
+      padding: 26px 18px 20px;
+      margin-bottom: 12px;
+    }
+
+    .prompt {
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .big-note {
+      width: 116px;
+      height: 116px;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 48px;
+      background: radial-gradient(circle at 35% 30%, #9b87ff, var(--accent));
+      box-shadow: 0 22px 55px rgba(124,92,255,.25);
+      user-select: none;
+    }
+
+    .message {
+      min-height: 52px;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 17px;
+      padding: 4px;
+    }
+
+    .message.good { color: var(--accent2); }
+    .message.bad { color: var(--danger); }
+
+    .primary {
+      width: 100%;
+      appearance: none;
+      border: 0;
+      border-radius: 16px;
+      padding: 15px 18px;
+      font-weight: 900;
+      font-size: 16px;
+      background: var(--accent);
+      color: white;
+      margin-top: 4px;
+      box-shadow: 0 12px 26px rgba(124,92,255,.2);
+    }
+
+    .primary:active, .note-btn:active, .ghost:active { transform: translateY(1px) scale(.995); }
+
+    .answers {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .note-btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: var(--card2);
+      color: var(--text);
+      border-radius: 15px;
+      padding: 15px 6px;
+      font-weight: 900;
+      font-size: 16px;
+      min-height: 54px;
+    }
+
+    .note-btn.correct { outline: 2px solid var(--accent2); background: rgba(32,201,151,.12); }
+    .note-btn.wrong { outline: 2px solid var(--danger); background: rgba(255,93,115,.10); }
+
+    .settings {
+      margin-top: 12px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .row:last-child { border-bottom: 0; }
+    .row strong { display: block; font-size: 14px; }
+    .row span { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
+
+    select, input[type="checkbox"] { accent-color: var(--accent); }
+    select {
+      background: var(--card2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-weight: 700;
+    }
+
+    .footer {
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+      margin-top: 16px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 540px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .answers { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>EarQuest</h1>
+        <p>Train your ear one note at a time.</p>
+      </div>
+      <button class="ghost" id="resetBtn" type="button">Reset</button>
+    </header>
+
+    <section class="stats" aria-label="Training stats">
+      <div class="stat"><div class="label">Streak</div><div class="value" id="streak">0 🔥</div></div>
+      <div class="stat"><div class="label">Accuracy</div><div class="value" id="accuracy">—</div></div>
+      <div class="stat"><div class="label">XP</div><div class="value" id="xp">0</div></div>
+      <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
+    </section>
+
+    <section class="panel trainer">
+      <div class="prompt">What note is this?</div>
+      <div class="big-note" id="bigNote">♪</div>
+      <div class="message" id="message">Tap “Play note” to start.</div>
+      <button class="primary" id="playBtn" type="button">▶ Play note</button>
+      <div class="answers" id="answers"></div>
+    </section>
+
+    <section class="panel settings">
+      <div class="row">
+        <div>
+          <strong>Note set</strong>
+          <span>Naturals first, or all 12 chromatic notes.</span>
+        </div>
+        <select id="noteSet">
+          <option value="natural">Naturals</option>
+          <option value="chromatic">Chromatic</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <div>
+          <strong>Octave range</strong>
+          <span>Randomize pitch height so you learn note identity, not one exact frequency.</span>
+        </div>
+        <select id="octaves">
+          <option value="4">Middle octave</option>
+          <option value="3,4">Octaves 3–4</option>
+          <option value="3,4,5" selected>Octaves 3–5</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <div>
+          <strong>Auto-next on correct</strong>
+          <span>Keep drilling without tapping “next.”</span>
+        </div>
+        <input id="autoNext" type="checkbox" checked />
+      </div>
+    </section>
+
+    <div class="footer">
+      Tip: replay the same note as many times as you want before answering. Wrong answers reveal the note without advancing.
+    </div>
+  </main>
+
+  <script>
+    const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+    const NATURAL_PCS = [0,2,4,5,7,9,11];
+
+    const els = {
+      answers: document.getElementById("answers"),
+      playBtn: document.getElementById("playBtn"),
+      message: document.getElementById("message"),
+      bigNote: document.getElementById("bigNote"),
+      noteSet: document.getElementById("noteSet"),
+      octaves: document.getElementById("octaves"),
+      autoNext: document.getElementById("autoNext"),
+      streak: document.getElementById("streak"),
+      accuracy: document.getElementById("accuracy"),
+      xp: document.getElementById("xp"),
+      best: document.getElementById("best"),
+      resetBtn: document.getElementById("resetBtn"),
+    };
+
+    let audioCtx;
+    let currentNote = null;
+    let previousMidi = null;
+    let roundStarted = false;
+    let roundHadMiss = false;
+    let locked = false;
+
+    const defaultStats = { correct: 0, attempts: 0, xp: 0, streak: 0, best: 0 };
+    let stats = loadStats();
+
+    function loadStats() {
+      try {
+        return { ...defaultStats, ...(JSON.parse(localStorage.getItem("earquestStats")) || {}) };
+      } catch {
+        return { ...defaultStats };
+      }
+    }
+
+    function saveStats() {
+      localStorage.setItem("earquestStats", JSON.stringify(stats));
+    }
+
+    function renderStats() {
+      els.streak.textContent = `${stats.streak} 🔥`;
+      els.best.textContent = stats.best;
+      els.xp.textContent = stats.xp;
+      els.accuracy.textContent = stats.attempts
+        ? `${Math.round((stats.correct / stats.attempts) * 100)}%`
+        : "—";
+    }
+
+    function notePool() {
+      return els.noteSet.value === "natural"
+        ? NATURAL_PCS
+        : [...Array(12).keys()];
+    }
+
+    function octavePool() {
+      return els.octaves.value.split(",").map(Number);
+    }
+
+    function rebuildButtons() {
+      const pcs = notePool();
+      els.answers.innerHTML = "";
+      pcs.forEach(pc => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "note-btn";
+        btn.textContent = NOTE_NAMES[pc];
+        btn.dataset.pc = pc;
+        btn.addEventListener("click", () => answer(pc, btn));
+        els.answers.appendChild(btn);
+      });
+
+      newRound(false);
+    }
+
+    function pickNote() {
+      const pcs = notePool();
+      const octaves = octavePool();
+
+      let pc, octave, midi;
+      for (let i = 0; i < 20; i++) {
+        pc = pcs[Math.floor(Math.random() * pcs.length)];
+        octave = octaves[Math.floor(Math.random() * octaves.length)];
+        midi = (octave + 1) * 12 + pc;
+        if (midi !== previousMidi || pcs.length * octaves.length === 1) break;
+      }
+      previousMidi = midi;
+      return { pc, octave, midi, name: NOTE_NAMES[pc] };
+    }
+
+    function midiToFrequency(midi) {
+      return 440 * Math.pow(2, (midi - 69) / 12);
+    }
+
+    async function ensureAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === "suspended") {
+        await audioCtx.resume();
+      }
+    }
+
+    async function playCurrent() {
+      if (!currentNote) currentNote = pickNote();
+      await ensureAudio();
+
+      const now = audioCtx.currentTime;
+      const master = audioCtx.createGain();
+      master.connect(audioCtx.destination);
+
+      master.gain.setValueAtTime(0.0001, now);
+      master.gain.exponentialRampToValueAtTime(0.30, now + 0.02);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 1.15);
+
+      const freq = midiToFrequency(currentNote.midi);
+
+      // A small harmonic stack gives a softer, more instrument-like tone than one pure sine wave.
+      const partials = [
+        { ratio: 1, gain: 1.0, type: "sine" },
+        { ratio: 2, gain: 0.18, type: "sine" },
+        { ratio: 3, gain: 0.08, type: "sine" }
+      ];
+
+      partials.forEach(p => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = p.type;
+        osc.frequency.setValueAtTime(freq * p.ratio, now);
+        g.gain.value = p.gain;
+        osc.connect(g);
+        g.connect(master);
+        osc.start(now);
+        osc.stop(now + 1.2);
+      });
+
+      if (!roundStarted) {
+        roundStarted = true;
+        els.message.className = "message";
+        els.message.textContent = "Listen closely…";
+      }
+    }
+
+    function clearButtonStates() {
+      document.querySelectorAll(".note-btn").forEach(btn => {
+        btn.classList.remove("correct", "wrong");
+      });
+    }
+
+    function newRound(playImmediately = true) {
+      clearTimeout(window.__earQuestTimer);
+      locked = false;
+      roundStarted = false;
+      roundHadMiss = false;
+      clearButtonStates();
+      currentNote = pickNote();
+      els.bigNote.textContent = "♪";
+      els.message.className = "message";
+      els.message.textContent = "Ready for the next one.";
+      els.playBtn.textContent = "▶ Play note";
+
+      if (playImmediately) playCurrent();
+    }
+
+    function answer(pc, btn) {
+      if (!currentNote || locked || !roundStarted) return;
+
+      stats.attempts += 1;
+
+      if (pc === currentNote.pc) {
+        stats.correct += 1;
+        stats.streak += 1;
+        stats.best = Math.max(stats.best, stats.streak);
+        stats.xp += roundHadMiss ? 5 : 10;
+
+        btn.classList.add("correct");
+        els.bigNote.textContent = currentNote.name;
+        els.message.className = "message good";
+        els.message.textContent = roundHadMiss
+          ? `Correct — ${currentNote.name}. Nice recovery.`
+          : `Correct — ${currentNote.name}! +10 XP`;
+
+        locked = true;
+
+        if (els.autoNext.checked) {
+          window.__earQuestTimer = setTimeout(() => newRound(true), 950);
+        } else {
+          els.playBtn.textContent = "Next note";
+        }
+      } else {
+        roundHadMiss = true;
+        stats.streak = 0;
+        btn.classList.add("wrong");
+        els.bigNote.textContent = currentNote.name;
+        els.message.className = "message bad";
+        els.message.textContent = `Nope — that was ${currentNote.name}. Try to lock that sound in.`;
+
+        setTimeout(() => btn.classList.remove("wrong"), 650);
+      }
+
+      saveStats();
+      renderStats();
+    }
+
+    els.playBtn.addEventListener("click", async () => {
+      if (locked && !els.autoNext.checked) {
+        newRound(true);
+      } else {
+        await playCurrent();
+      }
+    });
+
+    els.noteSet.addEventListener("change", rebuildButtons);
+    els.octaves.addEventListener("change", () => newRound(false));
+
+    els.resetBtn.addEventListener("click", () => {
+      if (!confirm("Reset all EarQuest stats?")) return;
+      stats = { ...defaultStats };
+      saveStats();
+      renderStats();
+      newRound(false);
+    });
+
+    rebuildButtons();
+    renderStats();
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
